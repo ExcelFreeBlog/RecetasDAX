@@ -1,0 +1,25 @@
+% Acumulado Respecto al Total de Año Anterior = 
+// Si necesitas cambiar el separador de lista de esta expresión de Punto y Coma (;) a Coma (,), por favor:
+// Abra este archivo con DAX Studio (https://daxstudio.org/) y utilce el comando: Swap Delimertes y luego
+// Copie y pegue la expresión desde el propio DAX Studio.
+VAR ListaDeFechas =
+IF(
+    HASONEVALUE( Calendario[Año] ) ;
+    VAR ValorAcumuladoALaFecha = 
+        CALCULATE(
+            "REFERENCIA_A_TU_MEDIDA_AQUÍ" ;
+            DATESYTD( Calendario[Fecha] )
+        )
+    VAR TotalDelAnPasado = 
+        CALCULATE(
+            "REFERENCIA_A_TU_MEDIDA_AQUÍ" ;
+            PARALLELPERIOD(
+                Calendario[Fecha] ;
+                -1 ;
+                YEAR
+            )
+        )
+    RETURN
+        DIVIDE( ValorAcumuladoALaFecha ; TotalDelAnPasado ) ;
+    "Seleccione 1 año"
+)
