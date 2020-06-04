@@ -10,7 +10,7 @@ VAR ListaDeFechas =
             1
         ) ;
         DATE(
-            YEAR( MAX( "ESCRIBA_AQUÍ_SU_COLUMNA_CON_LA_FECHA_MÁS_GRANDE"] ) ) ;
+            YEAR( MAX( "ESCRIBA_AQUÍ_SU_COLUMNA_CON_LA_FECHA_MÁS_GRANDE" ) ) ;
             12 ;
             31
         )
