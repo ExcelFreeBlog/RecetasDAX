@@ -1,0 +1,19 @@
+MTD Cálculo = 
+// Punto No. 1:
+//
+// Si necesitas cambiar el separador de lista de esta expresión de Punto y Coma (;) a Coma (,), por favor:
+// Abra este archivo con DAX Studio (https://daxstudio.org/) y utilce el comando: Swap Delimertes y luego
+// Copie y pegue la expresión desde el propio DAX Studio.
+//
+// Punto No. 2:
+//
+// Reemplace → "REFERENCIA_A_TU_MEDIDA_AQUÍ" por la referencia a la medida que desea acumular, ejemplo:
+// [Ingresos Tot]
+//
+// * Realice los cambios en nombres de campos que correspondan
+CALCULATE(
+    [Ingresos Tot] ;
+    DATESMTD(
+        Calendario[Fecha]
+    )
+) 
