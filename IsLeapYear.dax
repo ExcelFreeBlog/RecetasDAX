@@ -1,0 +1,33 @@
+IsLeapYear = 
+// Punto No. 1:
+//
+// Si necesitas cambiar el separador de lista de esta expresión de Punto y Coma (;) a Coma (,), por favor:
+// Abra este archivo con DAX Studio (https://daxstudio.org/) y utilce el comando: Swap Delimertes y luego
+// Copie y pegue la expresión desde el propio DAX Studio.
+//
+// Punto No. 2:
+//
+// Reemplace → "REFERENCIA_A_TU_MEDIDA_AQUÍ" por la referencia a la medida que desea acumular, ejemplo:
+// [Ingresos Tot]
+//
+// * Realice los cambios en nombres de campos que correspondan
+IF (
+    HASONEVALUE ( Calendario[Año] );
+    VAR AnSeleccionado =
+        INT ( VALUES ( Calendario[Año] ) )
+    VAR DivisibleEn4 =
+        MOD ( AnSeleccionado; 4 ) = 0
+    VAR DivisibleEn100 =
+        MOD ( AnSeleccionado; 100 ) = 0
+    VAR DivisibleEn400 =
+        MOD ( AnSeleccionado; 400 ) = 0
+    VAR EsAnBisiesto =
+        IF (
+            ( DivisibleEn4 && NOT ( DivisibleEn100 ) )
+                || DivisibleEn400;
+            TRUE ();
+            FALSE ()
+        )
+    RETURN
+        EsAnBisiesto
+)
