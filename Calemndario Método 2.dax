@@ -1,0 +1,53 @@
+Calendario = 
+// Si necesitas cambiar el separador de lista de esta expresión de Punto y Coma (;) a Coma (,), por favor:
+// Abra este archivo con DAX Studio (https://daxstudio.org/) y utilce el comando: Swap Delimertes y luego
+// Copie y pegue la expresión desde el propio DAX Studio.
+VAR ListaDeFechas =
+    CALENDAR(
+        DATE( 
+            YEAR ( MIN( "ESCRIBA_AQUÍ_SU_COLUMNA_CON_LA_FECHA_MÁS_PEQUEÑA" ) ) ;
+            1 ;
+            1
+        ) ;
+        DATE(
+            YEAR( MAX( "ESCRIBA_AQUÍ_SU_COLUMNA_CON_LA_FECHA_MÁS_GRANDE"] ) ) ;
+            12 ;
+            31
+        )
+    )
+    // CALENDARAUTO ()
+RETURN
+    GENERATE (
+        ListaDeFechas;
+        VAR Fecha = [Date]
+        VAR An =
+            YEAR ( Fecha )
+        VAR Trimestre =
+            QUARTER ( Fecha )
+        VAR TrimestrePrefijo =
+            "Trimestre" & QUARTER ( Fecha )
+        VAR MesNumero =
+            MONTH ( Fecha )
+        VAR MesNombre =
+            FORMAT ( Fecha; "mmmm" )
+        VAR DSNumero =
+            WEEKDAY ( Fecha; 2 )
+        VAR DSNombre =
+            FORMAT ( Fecha; "dddd" )
+        VAR Dia =
+            DAY( Fecha )
+        VAR Semana =
+            WEEKNUM( Fecha )
+        RETURN
+            ROW (
+                "Año"; An;
+                "Trimestre"; Trimestre;
+                "Trimestre Prefijo"; TrimestrePrefijo;
+                "Mes Número"; MesNumero;
+                "Mes Nombre"; MesNombre;
+                "DS Número"; DSNumero;
+                "DS Nombre"; DSNombre ;
+                "Día"; Dia ;
+                "Semana" ; Semana
+            )
+    )
