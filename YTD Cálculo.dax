@@ -19,12 +19,5 @@ IF(
             Calendario[Fecha]
         )
     ) ;
-    CALCULATE (
-        "REFERENCIA_A_TU_MEDIDA_AQUÍ"] ;
-        FILTER (
-            ALL ( Calendario[Fecha] ) ;
-            Calendario[Fecha] <= MAX ( Calendario[Fecha] ) 
-        ) ;
-        ALL ( Calendario )
-    )
+    "REFERENCIA_A_TU_MEDIDA_AQUÍ"
 )
