@@ -1,0 +1,155 @@
+Calendario = 
+// Punto No. 1:
+//
+// Si necesitas cambiar el separador de lista de esta expresión de Punto y Coma (;) a Coma (,), por favor:
+// Abra este archivo con DAX Studio (https://daxstudio.org/) y utilce el comando: Swap Delimertes y luego
+// Copie y pegue la expresión desde el propio DAX Studio.
+//
+// Punto No. 2 (Si es requerido):
+//
+// Reemplace → "NOMBRE_DE_LA_COLUMNA_CON_LA_FECHA_MÁS_PEQUEÑA" por el nombre de la columna en tu modelo de datos
+// De la cual deseas considerar la fecha más pequeña, ejemplo: Pedidos[Fecha de Envio]
+// Lo propio con → "NOMBRE_DE_LA_COLUMNA_CON_LA_FECHA_MÁS_GRANDE"
+//
+// * Realice los cambios en nombres de campos que correspondan
+VAR ListaDeFechas =
+    CALENDARAUTO ()
+/*
+    CALENDAR(
+        DATE( 
+            YEAR ( MIN( "NOMBRE_DE_LA_COLUMNA_CON_LA_FECHA_MÁS_PEQUEÑA" ) ) ;
+            1 ;
+            1
+        ) ;
+        DATE(
+            YEAR( MAX( "NOMBRE_DE_LA_COLUMNA_CON_LA_FECHA_MÁS_GRANDE" ) ) ;
+            12 ;
+            31
+        )
+    )
+*/
+VAR ListsDeFechasNuevoNombre = 
+    SELECTCOLUMNS(
+        ListaDeFechas ; 
+        "Fecha" ;
+        [Date]
+    )
+RETURN
+    GENERATE (
+        ListsDeFechasNuevoNombre;
+        VAR Fecha =
+            [Fecha]
+        VAR An =
+            YEAR ( Fecha )
+        VAR Semestre = 
+            IF(
+                MONTH( Fecha ) <= 6 ;
+                1 ;
+                2
+            )
+        VAR SemestrePrefijo = 
+            "Semestre " &
+            IF(
+                MONTH( Fecha ) <= 6 ;
+                1 ;
+                2
+            )
+        VAR Cuatrimestre = 
+            ROUNDUP( 
+                DIVIDE(
+                    MONTH( Fecha ) ;
+                    4
+                ) ;
+                0
+            )
+        VAR CuatrimestrePrefijo = 
+            "Cuatrimestre " &
+            ROUNDUP( 
+                DIVIDE(
+                    MONTH( Fecha ) ;
+                    4
+                ) ;
+                0
+            )        
+        VAR Trimestre =
+            -- Si la columna Trimestre te presenta error, por favor utiliza la siguiente función: INT ( FORMAT ( Fecha ; "q" ) )
+            QUARTER ( Fecha )
+        VAR TrimestrePrefijo =
+             -- Si la columna Trimestre Prefijo te presenta error, por favor utiliza la siguiente función: "Trimestre " & FORMAT ( Fecha ; "q" ) 
+            "Trimestre " & QUARTER ( Fecha ) 
+        VAR Bimestre = 
+            ROUNDUP( 
+                DIVIDE(
+                    MONTH( Fecha ) ;
+                    2
+                ) ;
+                0
+            )   
+        VAR BimestrePrefijo = 
+            "Bimestre" &
+            ROUNDUP( 
+                DIVIDE(
+                    MONTH( Fecha ) ;
+                    2
+                ) ;
+                0
+            )          
+        VAR MesNumero =
+            MONTH ( Fecha )
+        VAR MesNombre =
+            FORMAT ( Fecha; "mmmm" )
+        VAR MesNombreMayuscula = 
+        (
+            VAR PrimeraLetra = 
+                LEFT( FORMAT ( Fecha; "mmmm" ) )
+            VAR PrimeraLetraEnMayuscula = 
+                UPPER( PrimeraLetra )
+            VAR SegundaLetraEnAdelante = 
+                MID(
+                    FORMAT ( Fecha; "mmmm"  ) ;
+                    2 ;
+                    LEN( FORMAT ( Fecha; "mmmm"  ) )
+                )
+            VAR MesPrimeraLetraEnMayuscula = 
+                PrimeraLetraEnMayuscula & SegundaLetraEnAdelante
+            RETURN
+               MesPrimeraLetraEnMayuscula  
+        )
+        VAR DSNumero =
+            WEEKDAY ( Fecha; 2 )
+        VAR DSNombre =
+            FORMAT ( Fecha; "dddd" )
+        VAR Dia =
+            DAY( Fecha )
+        VAR Semana =
+            WEEKNUM( Fecha )
+        -- Estas son columnas técnicas, por lo que debería ocultarse en la vista de informe
+        -- Para más información sobre columnas técnicas: https://www.excelfreeblog.com/tablas-de-calendario-porque-son-la-bomba/
+        VAR AnMesNumero = 
+            YEAR( Fecha ) * 100 + MONTH( Fecha )
+        VAR AnTrimestreNumero = 
+            YEAR( Fecha ) * 100 + QUARTER( Fecha )
+        RETURN
+            ROW (
+                "Año"; An;
+                "Semestre" ; Semestre ;
+                "Semestre Prefijo" ; SemestrePrefijo ;
+                "Cuatrimestre" ; Cuatrimestre ;
+                "Cuatrimestre Prefijo" ; CuatrimestrePrefijo ;
+                "Trimestre"; Trimestre ;
+                "Trimestre Prefijo"; TrimestrePrefijo ;
+                "Bimestre" ; Bimestre ;
+                "Bimestre Prefijo" ; BimestrePrefijo ;
+                "Mes Número"; MesNumero ;
+                "Mes Nombre"; MesNombre ;
+                "Mes Nombre Mayus" ; MesNombreMayuscula ;
+                "DS Número"; DSNumero ;
+                "DS Nombre"; DSNombre ;
+                "Día"; Dia ;
+                "Semana" ; Semana ;
+                -- Estas son columnas técnicas, por lo que debería ocultarse en la vista de informe
+                -- Para más información sobre columnas técnicas: https://www.excelfreeblog.com/tablas-de-calendario-porque-son-la-bomba/
+                "Año Mes Número" ; AnMesNumero ;
+                "Año Trimestre Número" ; AnTrimestreNumero
+            )
+    )
