@@ -1,0 +1,39 @@
+Horas_MinutosySegundos =
+// Punto No. 1:
+//
+// Si necesitas cambiar el separador de lista de esta expresión de Punto y Coma (;) a Coma (,), por favor:
+// Abra este archivo con DAX Studio (https://daxstudio.org/) y utilce el comando: Swap Delimertes y luego
+// Copie y pegue la expresión desde el propio DAX Studio. 
+VAR Horas =
+    SELECTCOLUMNS ( GENERATESERIES ( 1; 12; 1 ); "Hora"; [Value] )
+VAR Minutos =
+    SELECTCOLUMNS ( GENERATESERIES ( 0; 59; 1 ); "Minutos"; [Value] )
+VAR Segundos =
+    SELECTCOLUMNS ( GENERATESERIES ( 0; 59; 1 ); "Segundos"; [Value] )
+VAR Periodo =
+    SELECTCOLUMNS ( { ( "AM" );( "PM" ) }; "AM/PM"; [Value] )
+VAR HorasMinutos =
+    GENERATEALL ( Horas; Minutos )
+VAR HorasMinutosSegundos =
+    GENERATEALL ( HorasMinutos; Segundos )
+VAR HoraMinutosSegundosAMPM =
+    GENERATEALL ( HorasMinutosSegundos; Periodo )
+VAR ColumnaDeTiempo =
+    SELECTCOLUMNS (
+        ADDCOLUMNS (
+            HoraMinutosSegundosAMPM;
+            "Tiempo"; TIMEVALUE (
+                FORMAT ( [Hora]; "00" ) & ":"
+                    & FORMAT ( [Minutos]; "00" ) & ":"
+                    & FORMAT ( [Segundos]; "00" ) & " " & [AM/PM]
+            )
+        );
+        "Tiempo"; [Tiempo]
+    )
+RETURN
+    ADDCOLUMNS(
+        ColumnaDeTiempo ;
+        "Hora" ; HOUR( [Tiempo] ) ;
+        "Minutos" ; MINUTE( [Tiempo] ) ;
+        "Segundos" ; SECOND( [Tiempo] )
+    )
