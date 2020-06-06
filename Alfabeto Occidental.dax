@@ -1,0 +1,9 @@
+Alfabeto Occidental = 
+ SELECTCOLUMNS(
+     GENERATESERIES(
+         UNICODE("a");
+         UNICODE("z")
+    );
+    "Letra";
+    UNICHAR([Value])
+)
