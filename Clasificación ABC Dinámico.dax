@@ -1,0 +1,115 @@
+Clasificación ABC = 
+// Punto No. 1:
+//
+// Si necesitas cambiar el separador de lista de esta expresión de Punto y Coma (;) a Coma (,), por favor:
+// Aplique la combinación Ctrl + Shift + L y reemplaze a necesidad.
+//
+// Si necesitas cambiar el separador de lista de esta expresión de Punto y Coma (;) a Coma (,), otra opción:
+// Abra este archivo con DAX Studio (https://daxstudio.org/) y utilce el comando: Swap Delimertes y luego
+// Copie y pegue la expresión desde el propio DAX Studio.
+//
+// -----------------------------------------
+// ----------- | INSTRUCCIONES | -----------
+// -----------------------------------------
+//
+VAR A_Porcentaje = 
+    0,7
+    // Escriba aquí el porcentaje que representa la categoría A, es decir,
+    // Si los productos en la categoría A representan el 70% de los ingresos,
+    // Deje el valor 0,7. De lo contrario cambiar a necesidad.
+VAR B_Porcentaje = 
+    0,2
+    // Escriba aquí el porcentaje que representa la categoría B, es decir,
+    // Si los productos en la categoría representa el 20% de los ingresos,
+    // Deje el valor 0,7. De lo contrario cambiar a necesidad
+
+// Reemplace → "CAMPO_CON_ID_PRODUCTO_EN_TABLA_DE_BÚSQUEDA" por la referencia a la columna que
+// Contiene la lista de productos o elementos a determinar la categoría ABC, importante,
+// Para un correcto funcionamiento debe pertenecer a una tabla de búsqueda, ejemplo:
+// SKUProdcutos[SKU]
+//
+// Reemplace → "CAMPO_CON_VALORES_EN_TABLA_DE_HECHOS" por la referencia a la columna que
+// Contiene los ingresos, costos, unidades, etc. Etc. Importante,
+// Para un correcto funcionamiento debe pertenecer a una tabla de transaccional, ejemplo:
+// Pedidos[Ingresos]
+
+RETURN
+IF(
+    HASONEVALUE( "CAMPO_CON_ID_PRODUCTO_EN_TABLA_DE_BÚSQUEDA" ) ;
+
+    // Lista De Productos y Producto Acutal
+    VAR SKUActual = 
+        VALUES( "CAMPO_CON_ID_PRODUCTO_EN_TABLA_DE_BÚSQUEDA" )
+    VAR ListaDeSKUs = 
+        ALL( "CAMPO_CON_ID_PRODUCTO_EN_TABLA_DE_BÚSQUEDA" )
+
+    // Tabla con Ingresos por producto e Ingresos Total (Según filtros externos)
+    VAR ListaDeSKUsConIng = 
+        ADDCOLUMNS(
+            ListaDeSKUs ;
+            "@IngTot" ; 
+            CALCULATE(
+                SUM( "CAMPO_CON_VALORES_EN_TABLA_DE_HECHOS" ) ;
+                REMOVEFILTERS( "CAMPO_CON_ID_PRODUCTO_EN_TABLA_DE_BÚSQUEDA" )
+            ) ;
+            "@IngxPrdct" ;
+            CALCULATE( SUM( "CAMPO_CON_VALORES_EN_TABLA_DE_HECHOS" ) ) 
+        )
+    
+    // Determinación de Incrementos
+    VAR ListaDeSKUsconIncrementos = 
+        ADDCOLUMNS(
+            ListaDeSKUsConIng ;
+            "@IncIng" ;
+            SUMX(
+                VAR IngAcutal = [@IngxPrdct]
+                RETURN
+                FILTER(
+                    ListaDeSKUsConIng ;
+                    [@IngxPrdct] >= IngAcutal
+                ) ;
+                [@IngxPrdct]
+            )
+        )
+
+    // Determinación de Porcentaje de Incremento
+    VAR ListaDeSKUsConPorcentajes = 
+        ADDCOLUMNS(
+            ListaDeSKUsconIncrementos ;
+            "@PctInc" ;
+            DIVIDE(
+                [@IncIng] ;
+                [@IngTot]
+            )
+        )
+
+    // Aginación de Categoría A, B o C
+    VAR CategoriaABC = 
+        ADDCOLUMNS(
+            ListaDeSKUsConPorcentajes ; 
+            "@ABC" ;
+            SWITCH(
+                TRUE() ;
+                [@PctInc] <= A_Porcentaje ; "A" ;
+                [@PctInc] <= A_Porcentaje + B_Porcentaje ; "B" ;
+                "C"
+            )
+        )
+    
+    // Selección de Categoría Actual según el contexto dde filtro original
+    VAR SeleccionDeCategoria =
+        SELECTCOLUMNS(
+            FILTER(
+                CategoriaABC ;
+                "CAMPO_CON_ID_PRODUCTO_EN_TABLA_DE_BÚSQUEDA" = SKUActual
+            ) ;
+            "ABC_Seleccionado" ;
+            [@ABC]
+        ) 
+
+    RETURN
+        SeleccionDeCategoria ;
+
+    BLANK()
+
+)
