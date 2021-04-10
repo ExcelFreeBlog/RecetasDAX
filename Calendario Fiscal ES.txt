@@ -1,0 +1,76 @@
+Calendario Fiscal = 
+-- Patrón / Recte DAX tomado de: https://www.daxpatterns.com/custom-time-related-calculations/
+-- Con ajustes a español.
+VAR PrimerMesFiscal = 3  -- Primer mes del año fiscal
+VAR PrimerDiaDelaSemana = 0    -- 0 = Domingo, 1 = Lunes, ...
+VAR FechaPrimeraVenta = MIN ( Pedidos[Fecha de Pedido] )
+VAR FechaUltimaVenta = MAX ( Pedidos[Fecha de Llegada] )
+VAR PrimerAnFiscal =     -- Personalizar el primer año fiscal a utilizar
+    YEAR ( FechaPrimeraVenta )
+    + 1 * ( MONTH ( FechaPrimeraVenta ) >= PrimerMesFiscal && PrimerMesFiscal > 1)
+VAR UltimoAnFiscal =      -- Personalizar último año fiscal
+    YEAR ( FechaUltimaVenta )
+    + 1 * ( MONTH ( FechaUltimaVenta ) >= PrimerMesFiscal && PrimerMesFiscal > 1)
+RETURN
+GENERATE (
+    VAR PrimerDia =
+        DATE (
+            PrimerAnFiscal - 1 * (PrimerMesFiscal > 1),
+            PrimerMesFiscal,
+            1
+        )
+ 
+    VAR UltimoDia =
+        DATE (
+            UltimoAnFiscal + 1 * (PrimerMesFiscal = 1),
+            PrimerMesFiscal, 1
+        ) - 1
+    RETURN
+        CALENDAR ( PrimerDia, UltimoDia ),
+ 
+    VAR FechaActual = [Date]
+    VAR Yr = YEAR ( FechaActual )        -- Year Number
+    VAR Mn = MONTH ( FechaActual )       -- Month Number (1-12)
+    VAR Mdn = DAY ( FechaActual )        -- Day of Month
+    VAR DateKey = Yr*10000+Mn*100+Mdn
+    VAR Wd =                             -- Weekday Number (0 = Sunday, 1 = Monday, ...)
+        WEEKDAY ( FechaActual + 7 - PrimerDiaDelaSemana, 1 )
+    VAR WorkingDay =                     -- Working Day (1 = working, 0 = non-working)
+        ( WEEKDAY ( FechaActual, 1 ) IN { 2, 3, 4, 5, 6 } )
+    VAR Fyr =                            -- Fiscal Year Number
+        Yr + 1 * ( PrimerMesFiscal > 1 && Mn >= PrimerMesFiscal )
+    VAR Fmn =                            -- Fiscal Month Number (1-12)
+        Mn - PrimerMesFiscal + 1 + 12 * (Mn < PrimerMesFiscal)
+    VAR Fqrn =                           -- Fiscal Quarter (string)
+        ROUNDUP ( Fmn / 3, 0 )
+    VAR Fmqn =
+        MOD ( FMn - 1, 3 ) + 1
+    VAR Fqr =                            -- Fiscal Quarter (string)
+        FORMAT ( Fqrn, "\Q0" )
+    VAR FirstDayOfYear =
+        DATE ( Fyr - 1 * (PrimerMesFiscal > 1), PrimerMesFiscal, 1 )
+    VAR Fydn =
+        SUMX (
+            CALENDAR ( FirstDayOfYear, FechaActual ),
+            1 * ( MONTH ( [Date] ) <> 2 || DAY ( [Date] ) <> 29 )
+        )
+    RETURN ROW (
+        "ID Fecha", INT ( DateKey ),
+        "Día Número Secuencia", INT ( [Date] ),
+        "Año Mes", FORMAT ( FechaActual, "mmm yyyy" ),
+        "Año Mes Número", Yr * 12 + Mn - 1,
+        "Fiscal Año", "FY " & Fyr,
+        "Año Fiscal Número", Fyr,
+        "Trimestre Fiscal y Año", "F" & Fqr & "-" & Fyr,
+        "Fiscal Año Trimestre Número", CONVERT ( Fyr * 4 + FQrn - 1, INTEGER ),
+        "Fiscal Trimestre", "F" & Fqr,
+        "Mes", FORMAT ( FechaActual, "mmm" ),
+        "Fiscal Mes Número", Fmn,
+        "Fiscal Mes en Trimestre Número",  Fmqn,
+        "Día Semana", FORMAT ( FechaActual, "ddd" ),
+        "Día Semana Número", Wd,
+        "Día del Mes Número", Mdn,
+        "Día del Año Fiscal Número", Fydn,
+        "Día Laboral", IF ( WorkingDay, "Día Laboral", "Día No Laboral" )
+    )
+)
