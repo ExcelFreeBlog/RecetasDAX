@@ -1,0 +1,74 @@
+Calendario = 
+-- Punto No. 1:
+--
+-- Si necesitas cambiar el separador de lista de esta expresión de Coma (,) a Coma ;), por favor:
+-- Abra este archivo con DAX Studio (https://daxstudio.org/) y utilce el comando: Swap Delimertes y luego
+-- Copie y pegue la expresión desde el propio DAX Studio.
+--
+-- Punto No. 2 (Si es requerido):
+--
+-- Reemplace → "NOMBRE_DE_LA_COLUMNA_CON_LA_FECHA_MÁS_PEQUEÑA" por el nombre de la columna en tu modelo de datos
+-- De la cual deseas considerar la fecha más pequeña, ejemplo: Pedidos[Fecha de Envio]
+-- Lo propio con → "NOMBRE_DE_LA_COLUMNA_CON_LA_FECHA_MÁS_GRANDE"
+--
+-- * Realice los cambios en nombres de campos que correspondan
+VAR ListaDeFechas =
+    CALENDARAUTO ()
+/*
+    CALENDAR(
+        DATE( 
+            YEAR ( MIN( "NOMBRE_DE_LA_COLUMNA_CON_LA_FECHA_MÁS_PEQUEÑA" ) ) ,
+            1 ,
+            1
+        ) ,
+        DATE(
+            YEAR( MAX( "NOMBRE_DE_LA_COLUMNA_CON_LA_FECHA_MÁS_GRANDE" ) ) ,
+            12 ,
+            31
+        )
+    )
+*/
+VAR ListsDeFechasNuevoNombre = 
+    SELECTCOLUMNS(
+        ListaDeFechas , 
+        "Fecha" ,
+        [Date]
+    )
+RETURN
+    GENERATE (
+        ListsDeFechasNuevoNombre,
+        VAR Fecha =
+            [Fecha]
+        VAR An =
+            YEAR ( Fecha )
+        VAR Trimestre =
+            -- Si la columna Trimestre te presenta error, por favor utiliza la siguiente función: INT ( FORMAT ( Fecha , "q" ) )
+            QUARTER ( Fecha )
+        VAR TrimestrePrefijo =
+             -- Si la columna Trimestre Prefijo te presenta error, por favor utiliza la siguiente función: "Trimestre " & FORMAT ( Fecha , "q" ) 
+            "Trimestre " & QUARTER ( Fecha ) 
+        VAR MesNumero =
+            MONTH ( Fecha )
+        VAR MesNombre =
+            FORMAT ( Fecha, "mmmm" )
+        VAR DSNumero =
+            WEEKDAY ( Fecha, 2 )
+        VAR DSNombre =
+            FORMAT ( Fecha, "dddd" )
+        VAR Dia =
+            DAY( Fecha )
+        VAR Semana =
+            WEEKNUM( Fecha )
+        RETURN
+            ROW (
+                "Año", An,
+                "Trimestre", Trimestre ,
+                "Trimestre Prefijo", TrimestrePrefijo ,
+                "Mes Número", MesNumero ,
+                "Mes Nombre", MesNombre ,
+                "DS Número", DSNumero ,
+                "DS Nombre", DSNombre ,
+                "Día", Dia ,
+                "Semana" , Semana 
+            )
+    )
